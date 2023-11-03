@@ -57,6 +57,7 @@ void triggerLock(){
   
 }
 
+// Function for short button press
 void unlockPC(){
   digitalWrite(pcPin, HIGH);
   Serial.println("PC Turning On");
@@ -64,10 +65,20 @@ void unlockPC(){
   digitalWrite(pcPin, LOW);
 }
 
+// Function for long button press
 void lockPC(){
   digitalWrite(pcPin, HIGH);
   Serial.println("PC Shutting Down");
   delay(10000);
+  digitalWrite(pcPin, LOW);
+}
+
+// Function that is used for single button mode
+// instead of one long press and one short press
+void pressButton(){
+  digitalWrite(pcPin, HIGH);
+  Serial.println("Power Button Pressed");
+  delay(200);
   digitalWrite(pcPin, LOW);
 }
 
@@ -112,10 +123,11 @@ void loop()
   delay(50);     //don't ned to run this at full speed.
   RGB(255,50,0); //Sets the RGB LED to it's idle yellow colour
   
+  // Check fingerprint and trigger power button if the fingerprint is accepted.
+  // Switches between short press and long press each time it is run.
   fingerStatus = getFingerprintIDez();
   if(fingerStatus != -1 and fingerStatus != -2 ){
     Serial.println("Finger accepted");
-    //triggerLock();
     if(pcOn == true){
       lockPC();
       pcOn = false;
@@ -153,9 +165,12 @@ int getFingerprintIDez() {
   p = finger.fingerFastSearch();
   if (p != FINGERPRINT_OK)  return -2;
   
-  // found a match!
+  // The code from here to the end of the function only runs if a match was found.
+  // (Previous return statements prevent it from running if an invalid print is scanned)
   Serial.print("Found ID #"); Serial.print(finger.fingerID); 
   Serial.print(" with confidence of "); Serial.println(finger.confidence);
+
+  // Allows different results for different register prints based on fingerID.
   if(finger.fingerID == 1){
     Serial.println("Finger: Thumb");
     RGB(0,255,0); //Sets the RGB LED to green
